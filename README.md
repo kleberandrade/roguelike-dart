@@ -11,6 +11,7 @@ Este projeto faz parte das minhas aulas de programação mobile com Flutter, por
 Instale o Dart SDK no seu computador e execute os seguintes comandos no terminal
 
 > cd caminho_do_projeto/bin
+>
 > dart main.dart
 
 ## Mais detalhes
