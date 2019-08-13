@@ -8,7 +8,7 @@ Este projeto faz parte das minhas aulas de programação mobile com Flutter, por
 
 ## Como testar?
 
-Instale o Dart SDK no seu computador e execute os seguintes comandos no terminal
+Instale o [Dart SDK](http://www.gekorm.com/dart-windows/) e o [Visual Studio Code](https://code.visualstudio.com/download) no seu computador e execute os seguintes comandos no terminal
 
 > cd caminho_do_projeto/bin
 >
@@ -19,6 +19,7 @@ Instale o Dart SDK no seu computador e execute os seguintes comandos no terminal
 Se você quiser entender mais detalhes do projeto é só [clicar aqui](https://medium.com/@kleberandrade/orientação-a-objetos-em-dart-16542b792eb9).
 
 ## Desafio para aula
+* Estudar o tutorial do jogo: http://bit.ly/31n2ufY
 * Instalar as ferramenta e compilar o jogo
 * Adicionar outros monstros (carneiro [simbolo C] - dócil; lobo [simbolo L] - agressivo)
 * Criar uma classe Carneiro e criar um movimento para fugir do jogador
