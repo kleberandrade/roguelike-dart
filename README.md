@@ -20,10 +20,10 @@ Se você quiser entender mais detalhes do projeto é só [clicar aqui](https://m
 
 ## Desafio para aula
 * Instalar as ferramenta e compilar o jogo
-* Adicionar outros monstros (carneiro [C] - dócil; lobo [L] - agressivo)
+* Adicionar outros monstros (carneiro [simbolo C] - dócil; lobo [simbolo L] - agressivo)
 * Criar uma classe Carneiro e criar um movimento para fugir do jogador
 * Criar uma classe Lobo e criar um movimento para perseguir o jogador
-* Criar uma classe de Tesouro que ao passar por cima, abre o tesouro e ganha X moedas (valor aleatório entre 50 e 100)
+* Criar uma classe de Tesouro [simbolo G] ue ao passar por cima, abre o tesouro e ganha X moedas (valor aleatório entre 50 e 100)
 * Exibir na tela a quantidade de moedas do jogador
 * Testar o jogo
 
