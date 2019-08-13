@@ -18,6 +18,13 @@ Instale o Dart SDK no seu computador e execute os seguintes comandos no terminal
 
 Se você quiser entender mais detalhes do projeto é só [clicar aqui](https://medium.com/@kleberandrade/orientação-a-objetos-em-dart-16542b792eb9).
 
+## Desafio para aula
+* Instalar as ferramenta e compilar o jogo
+* Adicionar outros monstros (carneiro [C] - dócil; lobo [L] - agressivo)
+* Criar uma classe Carneiro e criar um movimento para fugir do jogador
+* Criar uma classe Lobo e criar um movimento para perseguir o jogador
+* Testar o jogo
+
 ## Licença
 
     Copyright 2019 Kleber de Oliveira Andrade
