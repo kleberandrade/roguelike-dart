@@ -13,7 +13,7 @@ jobs:
       run:
         shell: bash
     env:
-      GAME_BINARY: ${{ runner.os == 'Windows' && 'build/roguelike.exe' || 'build/roguelike' }}
+      GAME_BINARY: ${{ matrix.os == 'windows-latest' && 'build/roguelike.exe' || 'build/roguelike' }}
     steps:
       - uses: actions/checkout@v7
       - uses: dart-lang/setup-dart@v1
