@@ -4,7 +4,16 @@ permissions:
   contents: read
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      GAME_BINARY: ${{ runner.os == 'Windows' && 'build/roguelike.exe' || 'build/roguelike' }}
     steps:
       - uses: actions/checkout@v7
       - uses: dart-lang/setup-dart@v1
@@ -16,5 +25,5 @@ jobs:
       - run: dart test
       - run: dart run example/seeded_world.dart
       - run: mkdir -p build
-      - run: dart compile exe bin/main.dart -o build/roguelike
-      - run: printf 'q\n' | build/roguelike --seed 42
+      - run: dart compile exe bin/main.dart -o "$GAME_BINARY"
+      - run: printf 'q\n' | "$GAME_BINARY" --seed 42

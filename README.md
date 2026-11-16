@@ -112,7 +112,7 @@ dart compile exe bin/main.dart -o build/roguelike
 
 On Windows, create `build` if needed and use `-o build/roguelike.exe`, then run
 `build\roguelike.exe --seed 42`. Native executables target the build host's OS and
-architecture. Linux CI runs the same checks and a scripted native startup/quit.
+architecture. Linux and Windows CI run the same checks and a scripted native startup/quit.
 
 The deterministic tests cover connected maps and walls across 20 seeds,
 construction errors, creature spawning, movement and boundaries, contact damage,
