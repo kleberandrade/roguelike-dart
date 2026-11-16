@@ -2,86 +2,68 @@ import 'package:roguelike/celula.dart';
 import 'package:roguelike/criatura.dart';
 import 'package:roguelike/jogador.dart';
 import 'package:roguelike/personagem.dart';
-import 'package:roguelike/ponto_2d.dart';
 
-// Classe que representa o mundo do jogo
+/// A rectangular, column-major map and its actors.
 class Mundo {
-  // Variável privada que guarda a largura e altura do mundo
-  int _largura, _altura;
-  // Matriz de células (grade) que define o mapa
-  List<List<Celula>> mapa;
-  // Lista de criaturas (NPCs)
-  List<Criatura> criaturas;
-  // Jogador controlado
-  Jogador jogador;
+  final List<List<Celula>> mapa;
+  final List<Criatura> criaturas;
+  late Jogador jogador;
 
-  // Construtor padrão do mundo
-  // @mapa: mapa criado de qualquer forma
-  // @crituras: lista de criaturas posicionadas
   Mundo(this.mapa, this.criaturas) {
-    _largura = mapa.length;
-    _altura = mapa[0].length;
-  }
-  
-  // Método que verifica se uma posição X,Y do mapa esta bloqueada ou não
-  bool bloqueado(int x, int y) {
-    return mapa[x][y].bloqueado;
+    if (mapa.isEmpty ||
+        mapa.first.isEmpty ||
+        mapa.any((coluna) => coluna.length != mapa.first.length)) {
+      throw ArgumentError('The map must be non-empty and rectangular');
+    }
   }
 
-  // Método que atualiza todas as criaturas do mundo
-  void atualizar() {
-    // Atualiza a posição do jogador
-    jogador.atualizar(this);
+  int get largura => mapa.length;
+  int get altura => mapa.first.length;
 
-    // FOREACH: atualiza a posição de todas as criaturas
-    for (Criatura criatura in criaturas) {
-      // Atualiza a posição de uma criatura
+  /// Coordinates outside the map are always blocked.
+  bool bloqueado(int x, int y) =>
+      x < 0 || y < 0 || x >= largura || y >= altura || mapa[x][y].bloqueado;
+
+  /// Move the player first, then every creature. A creature deals one damage
+  /// when it ends its turn on the player's cell; actors may share cells.
+  bool atualizar([String comando = '.']) {
+    if (!jogador.processarComando(this, comando)) return false;
+    for (final criatura in criaturas) {
       criatura.atualizar(this);
-
-      // Se a posição de uma criatura for igual a posição do jogador
-      if (criatura.posicao.toString() == jogador.posicao.toString()) {
-        // jogador toma 1 de dano (perde uma vida)
+      if (criatura.posicao.x == jogador.posicao.x &&
+          criatura.posicao.y == jogador.posicao.y) {
         jogador.tomarDano(1);
       }
     }
+    return true;
   }
 
-  // Método para desenhar o mundo no console
-  void desenhar() {
-
-    // Criar um mapa de criaturas baseado em suas posições
-    Map<String, Personagem> map = Map();
-    for (Criatura creature in criaturas) {
-      map[creature.posicao.toString()] = creature;
-    }
-
-    // Adicionamos também o jogador no mapa
-    map[jogador.posicao.toString()] = jogador;
-
-    // Exibe informações do jogador
-    print("Jogador está em [${jogador.posicao}]");
-    print("Vidas: ${jogador.vidas}");
-    print("Passos: ${jogador.passos}");
-
-    // Desenhar o mapa (percorre todas as linhas)
-    for (int y = 0; y < _altura; y++) {
-      var line = "";
-      // Percorre todas as colunas
-      for (int x = 0; x < _largura; x++) {
-
-        // SE na posição X, Y existe algo além do chão, então
-        if (map[Ponto2D(x, y).toString()] != null) {
-          // SE a posição tem um jogador, desenha o jogador, caso contrário desenha a criatura
-          if (map[Ponto2D(x, y).toString()].simbolo == Jogador.SIMBOLO_JOGADOR) {
-            line += '\u001b[34;1m' + map[Ponto2D(x, y).toString()].toString();
-          } else {
-            line += '\u001b[31;1m' + map[Ponto2D(x, y).toString()].toString();
-          }
-        } else { // Desenha o mapa
-          line += '\u001b[0m' + mapa[x][y].toString();
+  /// Render without terminal side effects; the player takes visual priority.
+  String renderizar({bool colorido = false}) {
+    final atores = <String, Personagem>{
+      for (final criatura in criaturas) criatura.posicao.toString(): criatura,
+      jogador.posicao.toString(): jogador,
+    };
+    final saida = StringBuffer()
+      ..writeln('Player: ${jogador.posicao}')
+      ..writeln('Lives: ${jogador.vidas}')
+      ..writeln('Turns: ${jogador.passos}');
+    for (var y = 0; y < altura; y++) {
+      for (var x = 0; x < largura; x++) {
+        final ator = atores['$x, $y'];
+        if (colorido && ator != null) {
+          saida.write(
+            identical(ator, jogador) ? '\u001b[34;1m' : '\u001b[31;1m',
+          );
         }
+        saida.write(ator?.simbolo ?? mapa[x][y].simbolo);
+        if (colorido && ator != null) saida.write('\u001b[0m');
       }
-      print(line);
+      saida.writeln();
     }
+    return saida.toString();
   }
+
+  void desenhar({bool colorido = false}) =>
+      print(renderizar(colorido: colorido));
 }

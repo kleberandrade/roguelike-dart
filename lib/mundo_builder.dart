@@ -1,84 +1,102 @@
 import 'dart:math';
+
 import 'package:roguelike/celula.dart';
 import 'package:roguelike/criatura.dart';
 import 'package:roguelike/mundo.dart';
 import 'package:roguelike/ponto_2d.dart';
 
-// Classe que criará mundos seguindo o padrão Builder
+/// Builds a connected random-walk dungeon, retaining its outer walls.
 class MundoBuilder {
-  // Constantes
-  static final String SIMBOLO_PASSAGEM = ".";
+  static const String SIMBOLO_PASSAGEM = '.';
+  final int largura, altura;
+  final Random _aleatorio;
+  List<List<Celula>> mapa = [];
+  List<Criatura> criaturas = [];
 
-  // Variáveis
-  int largura, altura;
-  List<List<Celula>> mapa;
-  List<Criatura> criaturas;
-
-  // Construtor padrão
-  MundoBuilder(this.largura, this.altura) {
-    criaturas = [];
+  MundoBuilder(this.largura, this.altura, {Random? aleatorio})
+    : _aleatorio = aleatorio ?? Random() {
+    if (largura < 3 || altura < 3) {
+      throw ArgumentError('World dimensions must be at least 3 by 3');
+    }
   }
 
-  // Método para preencher o mapa (passo 1 da heurística)
+  void _verificarMapa() {
+    if (mapa.isEmpty) {
+      throw StateError('Call preencher before building a world');
+    }
+  }
+
   MundoBuilder preencher(String simbolo, bool bloqueado) {
-    // Cria uma matriz X, Y com Células
     mapa = List.generate(
-        largura,
-        (int x) => List.generate(
-            altura, (int y) => Celula(Ponto2D(x, y), simbolo, bloqueado)));
+      largura,
+      (x) => List.generate(
+        altura,
+        (y) => Celula(Ponto2D(x, y), simbolo, bloqueado),
+      ),
+    );
+    criaturas = [];
     return this;
   }
 
-  // Método para criar o caminho (passagem)
-  // @x : início do personagem na posição X
-  // @y : início do personagem na posição Y
-  // @passos : quantidade de passos para o personagem sergui a bússola
   MundoBuilder criarCaminho(int x, int y, int passos) {
-    // Inicia a bússola quebrada (gerador de número aleatório)
-    Random bussola = Random(null);
-    // Realiza os K passados
-    for (int i = 0; i < passos; i++) {
-      // Verifica o novo norte da heurístíca
-      var norte = bussola.nextInt(4);
-
-      // Desloca o jogador para o norte apontado (sem atravessar as paredes)
-      if (norte == 0 && (x + 1) < (largura - 1)) {
-        x += 1;
-      } else if (norte == 1 && (x - 1) > 0) {
-        x -= 1;
-      } else if (norte == 2 && (y + 1) < (altura - 1)) {
-        y += 1;
-      } else if (norte == 3 && (y - 1) > 0) y -= 1;
-
-      // Troca a parede por uma passagem
+    _verificarMapa();
+    if (x <= 0 || y <= 0 || x >= largura - 1 || y >= altura - 1) {
+      throw ArgumentError('The path must start inside the outer walls');
+    }
+    if (passos < 0) throw ArgumentError.value(passos, 'passos');
+    // Even a zero-step walk opens the spawn cell.
+    mapa[x][y] = Celula(Ponto2D(x, y), SIMBOLO_PASSAGEM, false);
+    for (var i = 0; i < passos; i++) {
+      switch (_aleatorio.nextInt(4)) {
+        case 0:
+          if (x < largura - 2) x++;
+        case 1:
+          if (x > 1) x--;
+        case 2:
+          if (y < altura - 2) y++;
+        case 3:
+          if (y > 1) y--;
+      }
       mapa[x][y] = Celula(Ponto2D(x, y), SIMBOLO_PASSAGEM, false);
     }
-
     return this;
   }
 
-  // Método que adiciona criaturas no mapa
-  // @quantidadeCriaturas : número de criaturas que queremos colocar no mapa
   MundoBuilder criarCriaturas(int quantidadeCriaturas) {
-    // cria um número aleatório
-    Random aleatorio = Random();
-    int x, y;
-    // Cria N criaturas
-    for (int i = 0; i < quantidadeCriaturas; i++) {
-      // Impede que uma criatura seja criada em cima de uma parede
-      do {
-        x = aleatorio.nextInt(largura);
-        y = aleatorio.nextInt(altura);
-      } while (mapa[x][y].bloqueado);
-
-      // Adiciona a criatura na lista de criaturas
-      criaturas.add(Criatura(Ponto2D(x, y), Criatura.SIMBOLO_CRIATURA));
+    _verificarMapa();
+    if (quantidadeCriaturas < 0) {
+      throw ArgumentError.value(quantidadeCriaturas, 'quantidadeCriaturas');
+    }
+    final passagens = [
+      for (final coluna in mapa)
+        for (final celula in coluna)
+          if (!celula.bloqueado) celula.posicao,
+    ];
+    if (quantidadeCriaturas > 0 && passagens.isEmpty) {
+      throw StateError('Cannot spawn creatures without a walkable cell');
+    }
+    for (var i = 0; i < quantidadeCriaturas; i++) {
+      final posicao = passagens[_aleatorio.nextInt(passagens.length)];
+      criaturas.add(
+        Criatura(
+          Ponto2D(posicao.x, posicao.y),
+          Criatura.SIMBOLO_CRIATURA,
+          aleatorio: Random(_aleatorio.nextInt(1 << 32)),
+        ),
+      );
     }
     return this;
   }
 
-  // Retorna um Mundo
   Mundo build() {
-    return Mundo(mapa, criaturas);
+    _verificarMapa();
+    // Keep later builder calls from mutating an already built world.
+    return Mundo([
+      for (final coluna in mapa)
+        [
+          for (final c in coluna)
+            Celula(Ponto2D(c.posicao.x, c.posicao.y), c.simbolo, c.bloqueado),
+        ],
+    ], List.of(criaturas));
   }
 }

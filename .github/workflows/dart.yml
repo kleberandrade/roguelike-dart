@@ -1,0 +1,20 @@
+name: Dart
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get --enforce-lockfile
+      - run: dart format --output=none --set-exit-if-changed lib bin example test
+      - run: dart analyze --fatal-infos
+      - run: dart test
+      - run: dart run example/seeded_world.dart
+      - run: mkdir -p build
+      - run: dart compile exe bin/main.dart -o build/roguelike
+      - run: printf 'q\n' | build/roguelike --seed 42

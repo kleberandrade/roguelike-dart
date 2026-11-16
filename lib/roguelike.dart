@@ -1,66 +1,60 @@
+import 'dart:io';
+import 'dart:math';
+
 import 'package:roguelike/jogador.dart';
 import 'package:roguelike/mundo.dart';
 import 'package:roguelike/mundo_builder.dart';
 import 'package:roguelike/ponto_2d.dart';
 
-// Classe que define como o jogo funciona
 class Roguelike {
-  // Constantes
-  static final String SIMBOLO_PAREDE = "#";
-  static final int QUANTIDADE_CRIATUDAS = 60;
-  static final int QUANTIDADE_VIDAS = 2;
-  static final double FATOR_PROFUNDIDADE = 2.0;
+  static const String SIMBOLO_PAREDE = '#';
+  static const int QUANTIDADE_CRIATUDAS = 60;
+  static const int QUANTIDADE_VIDAS = 2;
+  static const double FATOR_PROFUNDIDADE = 2.0;
 
-  // Variáveis
-  Mundo _mundo;
-  Jogador _jogador;
-  int _largura, _altura;
+  late Mundo _mundo;
+  final int _largura, _altura;
+  final Random _aleatorio;
+  Mundo get mundo => _mundo;
 
-  // Construtor padrão
-  Roguelike(this._largura, this._altura) {
+  Roguelike(this._largura, this._altura, {Random? aleatorio})
+    : _aleatorio = aleatorio ?? Random() {
     criarMundo();
   }
 
-  // Método para cria o mundo
   void criarMundo() {
-    // Define a posição inicial do jogador
-    Ponto2D posicao = Ponto2D.zero();
-    posicao.x = _largura ~/ 2;
-    posicao.y = _altura ~/ 2;
-
-    // Define a quantidade de passos
-    int passos = ((_largura * _altura) * FATOR_PROFUNDIDADE).toInt();
-
-    // Cria o jogador
-    _jogador = Jogador(posicao, Jogador.SIMBOLO_JOGADOR, QUANTIDADE_VIDAS);
-
-    // Cria o mapa do jogo
-    // 1. Preenche mapa
-    // 2. Cria o caminho
-    // 3. Adicionar as criaturas
-    _mundo = MundoBuilder(_largura, _altura)
+    final posicao = Ponto2D(_largura ~/ 2, _altura ~/ 2);
+    _mundo = MundoBuilder(_largura, _altura, aleatorio: _aleatorio)
         .preencher(SIMBOLO_PAREDE, true)
-        .criarCaminho(posicao.x, posicao.y, passos)
+        .criarCaminho(
+          posicao.x,
+          posicao.y,
+          (_largura * _altura * FATOR_PROFUNDIDADE).toInt(),
+        )
         .criarCriaturas(QUANTIDADE_CRIATUDAS)
         .build();
-
-    // Coloca o jogador dentro do mundo
-    _mundo.jogador = _jogador;
+    _mundo.jogador = Jogador(
+      posicao,
+      Jogador.SIMBOLO_JOGADOR,
+      QUANTIDADE_VIDAS,
+    );
   }
 
-  // Executa a lógica do jogo
+  /// Read one command per line. Q or EOF exits without advancing a turn.
   void executar() {
-
-    // Enquanto o jogador estiver vivo
-    while (_jogador.vivo()) {
-      // Desenha o mundo
-      _mundo.desenhar();
-
-      // Atualiza todas as criaturas e jogador
-      _mundo.atualizar();
+    while (_mundo.jogador.vivo()) {
+      _mundo.desenhar(
+        colorido: stdout.hasTerminal && stdout.supportsAnsiEscapes,
+      );
+      stdout.writeln('W/A/S/D + Enter: move | .: wait | Q: quit');
+      final entrada = stdin.readLineSync();
+      if (entrada == null || entrada.trim().toUpperCase() == 'Q') {
+        stdout.writeln('Goodbye!');
+        return;
+      }
+      if (!_mundo.atualizar(entrada)) stdout.writeln('Unknown command.');
     }
-
-    // Gameover
-    print("Você perdeu após ${_jogador.passos} passos!");
+    _mundo.desenhar(colorido: stdout.hasTerminal && stdout.supportsAnsiEscapes);
+    stdout.writeln('Game over after ${_mundo.jogador.passos} turns!');
   }
 }

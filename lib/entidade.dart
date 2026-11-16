@@ -1,16 +1,12 @@
 import 'package:roguelike/ponto_2d.dart';
 
+/// A visible object with a mutable position and display symbol.
 class Entidade {
-  // Variáveis
-  Ponto2D posicao;    // posição na matriz
-  String simbolo;     // representação visual
+  Ponto2D posicao;
+  String simbolo;
 
-  // Construtor padrão
   Entidade(this.posicao, this.simbolo);
 
-  // Sobrecarga do toString (exibe o simbolo)
   @override
-  String toString() {
-    return simbolo;
-  }
+  String toString() => simbolo;
 }
