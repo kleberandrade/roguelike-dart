@@ -1,5 +1,9 @@
 # Roguelike Dart
 
+[![Dart SDK: >=3.14.0 <4.0.0](https://img.shields.io/badge/Dart-%3E%3D3.14.0%20%3C4.0.0-0175C2?logo=dart&logoColor=white)](https://dart.dev/get-dart)
+[![Dart CI](https://github.com/kleberandrade/roguelike-dart/actions/workflows/dart.yml/badge.svg?branch=master)](https://github.com/kleberandrade/roguelike-dart/actions/workflows/dart.yml?query=branch%3Amaster)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 An educational, turn-based ASCII roguelike by **Kléber de Oliveira Andrade**.
 Originally used in mobile programming classes, the game is written entirely in
 Dart and runs in a terminal. It demonstrates inheritance, a world builder,
