@@ -28,8 +28,14 @@ dart pub outdated
 - A PTY session was exercised: startup, one wait turn, updated status and Q.
 - Redirected output contains no ANSI escape sequences.
 
-The GitHub Actions workflow is provided for Linux but has not been run remotely.
-Windows and Linux were not executed locally; their commands are documented for
-standard Dart CLI usage. The VS Code terminal launch configuration was updated
-but not exercised through the editor UI. Random sequences are only reproducible
+## Remote CI
+
+[GitHub Actions run 43789734224](https://github.com/kleberandrade/roguelike-dart/actions/runs/43789734224)
+validated commit `4420b8c` on both `ubuntu-latest` and `windows-latest`.
+Both platforms passed locked dependency resolution, formatting, static analysis,
+all 12 tests, the seeded example, native compilation and startup/quit.
+
+Windows and Linux were validated through hosted runners, not locally.
+The VS Code terminal launch configuration was updated but not exercised through
+the editor UI. Random sequences are only reproducible
 within the same SDK and settings; the tests do not promise cross-version maps.
